@@ -1,4 +1,92 @@
 #!/bin/bash
+# *** REVIEW BEFORE EXECUTING (it should be all good, ...but it's untested!) ***
+#
+# ==============================================================================
+# VENTOY LUKS VAULT SETUP WIZARD [AES512 Serpent + Argon2id (Version 2.1)
+# ==============================================================================
+#
+# SYNOPSIS:
+# This plan creates a persistent, bootable [Ubuntu] usb-disk on a keychain with
+# a PRIVATE partition that ONLY auto-mounts a PUBLIC partition when enumerated
+# on a typical MSFT, AAPL, or Linux machine. By specifying unusual but
+# compatible GUIDs (LVM, BootEFI, or Windows Recovery) which are usually
+# ignored by the OS, these partitions do not auto-mount. A standard exFAT
+# 'msftdata' PUBLIC partition serves both a functional role and obfuscates the
+# full capability of the drive from the casual observer. It employs
+# Multi-Factor Encryption by using GPG-encrypted symmetric keyfiles to unlock a
+# Serpent+Argon2id LUKS partition, providing reasonably secure data storage for
+# a persistent live-session located on a single usb-drive carried on a physical
+# key-ring.
+#
+# Ideally, a usb-disk on a key-chain carries [asymmetric] PUBLIC keys and uses
+# a passphrase with the GPG [asymmetric] PRIVATE key to unlock the LUKS
+# partition's symmetric keyfile. This requires access to the laptop, access to
+# the usb-drive, and the GPG passphrase. If the laptop is stolen, the data is
+# protected; if the keys are stolen, the data is protected. If both the laptop
+# and the keys are stolen, the data is protected. Even if the password and the
+# keys are captured, spare LUKS key slots can be used to change the 
+# credentials. An attack requires the memorized GPG PRIVATE KEY passphrase, the
+# usb-drive's decrypted PUBLIC keys, AND physical access to the laptop. 
+# Additionally, the LUKS header could be detached and stored on the usb-drive 
+# when not in use, making the unmapped volume appear as random noise.
+#
+# However, for this specific use case, where the PRIVATE keys are carried WITH
+# the secured volume at all times, 2 LUKS keys (1 backup and 1 default) are
+# each secured using GPG2 w/ password protection [symmetric encryption]. This
+# means that the memorized GPG2 key password effectively provides the only
+# 'real' protection since the encrypted keys could easily be found in the live
+# instance by a thief, so the key's passphrase should carefully balance the
+# requirement of being memorable with the need to be relatively complex/long.
+# Critically, both the GPG2-encrypted keys and the Serpent+Argon2id LUKS volume
+# data are each well-protected from brute force attacks, which is why this
+# approach is vastly superior to simply creating a new LUKS volume with a
+# passphrase via 'Disks' in the GUI.
+#
+# | P-# | Label    | File System | GUID       | Flags/Attributes               |
+# | :-- | :------- | :---------- | :--------- | :----------------------------- |
+# | P-1 | images   | exFAT       | LVM        | lvm, no_automount              |
+# | P-2 | efiboot  | FAT16       | EFI System | boot, esp, hidden, no_automount|
+# | P-3 | writable | ext4        | LVM        | lvm, no_automount              |
+# | P-4 | share    | exFAT       | msftdata   | msftdata                       |
+# | P-5 | secret   | ext4 (LUKS) | LVM        | lvm, no_automount, hidden      |
+#
+#
+# INSTRUCTIONS:
+#
+# * Use a giant, ultra-fast, BLANK usb drive. (512GB? 3.1/3.2 2x2?)
+#
+# * Install Ventoy using options to install as GPT instead of the default MBR
+# Assign/reserve additional space as desired for this project!!! 
+#
+# * Ventoy will create partitions 1 and 2.
+# You can NEVER change the location or size of these partitions, so get it right
+# the FIRST time. (fyi - it's fine to change the LABEL and flags of P1 and P2).
+# 
+# * Manually create Partition-3 as an ext4 filesystem with the LABEL=writable
+# This causes the live Ubuntu-24 to natively identify Partiton-3 as persistent
+# storage; No Ventoy .dat file needed. ...But we DO need to use ventoy.json to 
+# configure GRUB to append the word 'persistent' to the boot options (else you 
+# must press 'e' to manually append the argument to the bootloader each time.
+#
+# VERIFY that the persistent parition actually works before doing anything else!
+#
+# * Create a public (exFAT, ntfs, ext4, etc.) Partition-4 with LABEL=share 
+# and a private (ext4) Partition-5 with LABEL=secret [fyi - ext4 is REQUIRED for
+# LUKS! ...and it only works in linux hosts]. The script expects these volume 
+# labels when it sets up the auto-mount for ubuntu to open the 'share' partition
+# automatically by creating a systemD service; This is done primarily to mount a
+# music library in the 'shared' partition into the ~/Music folder at boot, so 
+# that music isn't kept in the 'writable' partiton used for the ubuntu overlay.
+# 
+# With the basic persistent drive working correctly, chmod +x this script
+# and execute it in the Ubuntu [>=v24.04.4] live-session to:
+#
+# * Always mount Partition-4 [shared] at boot of the persistent live-session.
+#   (by using a SystemD service that calls a startup script)
+# * Bind /mnt/share/Music to ~/Music at each boot.
+# * Secure Partition-5 with LUKS using AES256 Serpent+Argon2id w/ GPG2.
+# * Generate '~/vault.sh' to toggle access to the LUKS volume.
+
 # ---------------
 # LUKS COMMANDS #
 #----------------
