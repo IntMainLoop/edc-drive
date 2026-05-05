@@ -1,0 +1,18 @@
+[Unit]
+Description=Mount Music Partition
+After=graphical.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/startup-mount.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=graphical.target
+
+#--------------
+#Apply Changes:
+#--------------
+# sudo chmod +x /usr/local/bin/startup-mount.sh
+# sudo systemctl daemon-reload
+# sudo systemctl enable startup-mount.service
