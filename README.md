@@ -12,11 +12,14 @@ The luks-commands.sh script is untested, but the same steps have been taken succ
 6.) create (P5:ext4) Private  
 7.) Execute luks-commands.sh (probably still need to run them one at a time instead of as a script to avoid any issues, but hey, it might work?)  
 
-Partition1 [exFAT] = 'images' (created by Ventoy - use GPT and leave remaining space) [GUID_TYPE:LVM]  
-Partition2 [FAT16] = 'EFIBOOT' (created by Ventoy) [GUID_TYPE:EFI BOOT]  
-Partition3 [ext4] = 'writable' (persistent partition) [GUID_TYPE:LVM]  
-Partition4 [exFAT] = 'share' (public) [GUID_TYPE:Basic Data, msftdata]  
-Partition5 [ext4] = 'secret' (LUKS secured) [GUID_TYPE:LVM]  
+| P-# | Label    | File System | GUID       | Flags/Attributes               |  
+| :-: | :------: | :---------: | :--------: | :----------------------------: |  
+| P-1 | images   | exFAT       | LVM        | lvm, no_automount              |  
+| P-2 | efiboot  | FAT16       | EFI System | boot, esp, hidden, no_automount|  
+| P-3 | writable | ext4        | LVM        | lvm, no_automount              |  
+| P-4 | share    | exFAT       | msftdata   | msftdata                       |  
+| P-5 | secret   | ext4 (LUKS) | LVM        | lvm, no_automount, hidden      |  
+  
 (These GUID_TYPE's cause only the 'share' partition to automount on most systems.)  
   
 To LABEL ExFAT partitons use:  
