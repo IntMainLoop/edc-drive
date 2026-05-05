@@ -1,0 +1,15 @@
+{
+    "control": [
+        {
+            "VTOY_LINUX_REMOUNT": "1",
+            "VTOY_DEFAULT_MENU_MODE": "0" 
+        }
+    ],
+    "conf_replace": [
+        {
+            "iso": "/images/ubuntu-24.04.4-desktop-amd64.iso",
+            "org": "/boot/grub/grub.cfg",
+            "new": "/ventoy/ubuntu_grub.cfg"
+        }
+    ]
+}
