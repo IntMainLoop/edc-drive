@@ -1,5 +1,5 @@
 #!/bin/bash
-# path = /usr/local/bin/startup-mount.sh
+# file location = /usr/local/bin/startup-mount.sh
 
 # 1. Create the mount point if it doesn't exist
 mkdir -p /media/ubuntu/share
