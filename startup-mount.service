@@ -1,3 +1,5 @@
+# file locaiton = /etc/systemd/system/startup-mount.service
+
 [Unit]
 Description=Mount Music Partition
 After=graphical.target
