@@ -10,7 +10,7 @@ The secure_partition.sh script is untested, strongly consider running each comma
     * This creates P1-exFAT, P2:FAT16.  
     * Carefully consider the parition sizes requried. USB drives don't appreciate unnecessary writes.
     * DO NOT attempt to re-size the partitions which Ventoy created.  
-    * It's ok to re-label the ventoy partitions, but that's about it.
+    * It's ok to re-label/flag the ventoy partitions, but that's about it.
 2.  Copy an Ubuntu-desktop 24.04 LTS or later .iso image into Ventoy's 'images' partiton (P1:exFAT)  
 3.  Create an [ext4] partion labeled 'writable' for persistent data
     * Be sure that the Ubuntu persistence partition uses the label 'writable' or it will be ignored starting in Ubuntu v20  
