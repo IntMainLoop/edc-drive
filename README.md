@@ -2,8 +2,8 @@
 create a bootable, persistent, secure, usb-drive with a public partiton that auto-mounts  
 -----------------------------------------------------------------------------------------------
 
-* WARNING!  
-The secure_partition.sh script is untested, strongly consider running each command in luks-commands.txt by hand for now
+* ATTENTION:
+The secure_partition.sh script is now working
 
 * DE'STRUCTIONS:
 1.  Install Ventoy with a GPT boot sector to a large USB drive assigning plenty of unallocated space
@@ -26,7 +26,7 @@ The secure_partition.sh script is untested, strongly consider running each comma
     * sudo systemctl enable startup-mount.service
 6.  VERIFY THAT PERSISTENCE WORKS BY WRITING A NEW FILE TO THE DESKTOP AND REBOOTING!  
 7.  create (P4:exFAT), 'share', Public  
-8.  create (P5:ext4), 'system', Private  
+8.  create (P5:ext4), 's_data', Private  
 9.  Execute 'secure_partition.sh' (untested)
 10.  If Necessary, use gParted to set the Flags/Attributes and GUID's after the vault works so that only the public, 'share' partiton will auto-mount when enumerated on nearly any OS.
 
@@ -36,7 +36,7 @@ The secure_partition.sh script is untested, strongly consider running each comma
 | P-2 | efiboot  | FAT16       | EFI System | boot, esp, hidden, no_automount|  
 | P-3 | writable | ext4        | LVM        | lvm, no_automount              |  
 | P-4 | share    | exFAT       | msftdata   | msftdata                       |  
-| P-5 | system   | ext4 (LUKS) | LVM        | lvm, no_automount, hidden      |  
+| P-5 | s_data   | ext4 (LUKS) | LVM        | lvm, no_automount, hidden      |  
   
 11. Keep the vault.sh script anywhere you like
     * Simply run vault.sh to open or close the vault  
