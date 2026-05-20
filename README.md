@@ -3,7 +3,7 @@ create a bootable, persistent, secure, usb-drive with a public partiton that aut
 -----------------------------------------------------------------------------------------------
 
 * WARNING!  
-The luks-commands.sh script is untested, strongly consider running each command by hand for now
+The secure_partition.sh script is untested, strongly consider running each command in luks-commands.txt by hand for now
 
 * DE'STRUCTIONS:
 1.  Install Ventoy with a GPT boot sector to a large USB drive assigning plenty of unallocated space
@@ -27,8 +27,8 @@ The luks-commands.sh script is untested, strongly consider running each command 
 6.  VERIFY THAT PERSISTENCE WORKS BY WRITING A NEW FILE TO THE DESKTOP AND REBOOTING!  
 7.  create (P4:exFAT), 'share', Public  
 8.  create (P5:ext4), 'system', Private  
-9.  Execute 'luks-commands.sh' (probably still need to run commands one-at-a-time and think about them instead of running blindly as a script to avoid any issues, but hey, it might work?)  
-10.  Use gParted to set the Flags/Attributes and GUID's after the vault works so that only the public, 'share' partiton will auto-mount when enumerated on nearly any OS.
+9.  Execute 'secure_partition.sh' (untested)
+10.  If Necessary, use gParted to set the Flags/Attributes and GUID's after the vault works so that only the public, 'share' partiton will auto-mount when enumerated on nearly any OS.
 
 | P-# | Label    | File System | GUID       | Flags/Attributes               |  
 | :-: | :------: | :---------: | :--------: | :----------------------------: |  
