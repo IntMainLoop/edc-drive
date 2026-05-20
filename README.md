@@ -2,9 +2,10 @@
 create a bootable, persistent, secure, usb-drive with a public partiton that auto-mounts  
 -----------------------------------------------------------------------------------------------
 
-* ATTENTION:
-The secure_partition.sh script is now working
-
+* ATTENTION:  
+The 'secure_partition.sh' script is now working.  
+'luks-commands.txt' is now only a historical reference.  
+  
 * DE'STRUCTIONS:
 1.  Install Ventoy with a GPT boot sector to a large USB drive assigning plenty of unallocated space
     * This creates P1-exFAT, P2:FAT16.  
