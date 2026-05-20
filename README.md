@@ -28,7 +28,7 @@ The 'secure_partition.sh' script is now working.
 6.  VERIFY THAT PERSISTENCE WORKS BY WRITING A NEW FILE TO THE DESKTOP AND REBOOTING!  
 7.  create (P4:exFAT), 'share', Public  
 8.  create (P5:ext4), 's_data', Private  
-9.  Execute 'secure_partition.sh' (untested)
+9.  Execute 'secure_partition.sh'
 10.  If Necessary, use gParted to set the Flags/Attributes and GUID's after the vault works so that only the public, 'share' partiton will auto-mount when enumerated on nearly any OS.
 
 | P-# | Label    | File System | GUID       | Flags/Attributes               |  
