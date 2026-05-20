@@ -1,79 +1,91 @@
 #!/bin/bash
-# -----------------------------------------------
-# Use this script to open/close the secure volume 
-# -----------------------------------------------
+# ----------------------------------------------------------------------
+# Vault Management Script (Matches secure_partition.sh Environment)
+# ----------------------------------------------------------------------
 
-# Default configuration
+# Production Configuration Parameters
 PUBLIC_VOLUME_LABEL="system"
 MAPPER_NAME="vault"
 MNT="/mnt/sd/secrets"
 GPG_KEY_1_PATH="$HOME/keys/secret-1.key.gpg"
 
-# Check if the volume is already open
+# Check if the cryptographic volume is already active
 if [ -b "/dev/mapper/$MAPPER_NAME" ]; then
-    echo "Vault is already open. Locking down..."
+    echo "Vault is currently active. Initiating secure tear-down..."
     
-    # Unmount if currently mounted
-    mountpoint -q "$MNT" && sudo umount "$MNT"
+    # Safely unmount filesystem if mounted
+    if mountpoint -q "$MNT"; then
+        echo "Unmounting filesystem at $MNT..."
+        sudo umount "$MNT"
+    fi
     
-    # Close the LUKS container
+    # Close the LUKS2 Container
+    echo "Collapsing virtual cryptographic pathways..."
     sudo cryptsetup close "$MAPPER_NAME"
     
-    # Verify the close
+    # Structural integrity check post-closure
     if [ -b "/dev/mapper/$MAPPER_NAME" ]; then
-	echo "WARNING: The vault was unable to be secured!!!"
-	echo "Close any applications that may be using the volume and try again."
-	exit 1
+        echo "❌ WARNING: The vault was unable to be secured!" >&2
+        echo "Close active target applications using the volume and retry." >&2
+        exit 1
     else
-	# Remove the mount point only if unmount was successful
-	sudo rmdir $MNT
-	echo "Vault secured."
+        # Remove target mount directory if cleanup succeeded
+        if [ -d "$MNT" ]; then
+            sudo rmdir "$MNT"
+        fi
+        echo "✅ Process Complete: Vault pathways collapsed and secured."
     fi
 else
-    echo "Unlocking Vault..."$'\n'
+    echo "Unlocking Multi-Layer Encrypted Vault..."$'\n'
     
-    # Display available drives and labels for reference
+    # Enumerate available physical attachments (excluding root storage blocks)
+    echo "=================================================================="
+    echo " AVAILABLE BLOCK STORAGE ATTACHMENTS:"
+    echo "=================================================================="
     lsblk -o NAME,FSTYPE,LABEL,SIZE --include 8
+    echo "=================================================================="
     echo ""
 
-    # 1. Ask for the Volume Label
-    read -erp "Enter the LUKS volume label: " -i "$PUBLIC_VOLUME_LABEL" TARGET_NAME
+    # 1. Ask for the GPT Partition Label (Defaults to "system")
+    read -erp "Enter the GPT partition label: " -i "$PUBLIC_VOLUME_LABEL" TARGET_NAME
 
-    # 2. Dynamic Discovery: Find the /dev path associated with that specific LABEL
-    # We use -p for full paths and -l for a flat list
+    # 2. Dynamic Discovery: Find the /dev block path via GPT Partition Name/Label
     DYNAMIC_DEVICE=$(lsblk -lnpo PATH,LABEL --include 8 | awk -v label="$TARGET_NAME" '$2==label {print $1; exit}')
 
-    # 3. Fallback: If label not found, suggest the first crypto_LUKS partition available
+    # 3. Structural Fallback: Scan blocks for an unmapped crypto_LUKS filesystem type
     if [ -z "$DYNAMIC_DEVICE" ]; then
         DYNAMIC_DEVICE=$(lsblk -lnpo PATH,FSTYPE --include 8 | awk '$2=="crypto_LUKS" {print $1; exit}')
     fi
 
-    # 4. Confirm the Target Device
-    read -erp "Enter the target device: " -i "$DYNAMIC_DEVICE" TARGET_DEVICE
+    # 4. Confirm the Targeted Block Device
+    read -erp "Confirm target block device path: " -i "$DYNAMIC_DEVICE" TARGET_DEVICE
 
-    # Safety check: ensure the device exists before proceeding
+    # Strict Safety Check: Verify block device presence before execution
     if [ ! -b "$TARGET_DEVICE" ]; then
-        echo "ERROR: Device $TARGET_DEVICE not found."
+        echo "❌ Error: Targeted block device '$TARGET_DEVICE' is unavailable." >&2
         exit 1
     fi
 
-    # Create mount point if it doesn't exist
+    # Prepare local transient mount paths
     sudo mkdir -p "$MNT"
 
-    echo "Requesting passphrase via GPG..."
+    echo "Streaming cryptographic token via GPG symmetric decryption layer..."
     
-    # 5. Decrypt GPG key and Pipe to LUKS
-    # --key-file=- tells cryptsetup to read the key from the pipe
-    if gpg --decrypt "$GPG_KEY_1_PATH" | sudo cryptsetup open "$TARGET_DEVICE" "$MAPPER_NAME" --key-file=-; then
+    # 5. Pipeline GPG Decrypted Token straight to cryptsetup stdin (-)
+    if gpg --decrypt "$GPG_KEY_1_PATH" 2>/dev/null | sudo cryptsetup open "$TARGET_DEVICE" "$MAPPER_NAME" --key-file=-; then
+        echo "Mounting file container filesystem..."
         sudo mount "/dev/mapper/$MAPPER_NAME" "$MNT"
-        echo "-----------------------------------------------"
-        echo "SUCCESS: Vault mounted at $MNT"
-        echo "-----------------------------------------------"
         
-        # Clear GPG cache so the passphrase isn't sitting in memory
-        gpg-connect-agent reloadagent /bye
+        echo "------------------------------------------------------------------"
+        echo " ✅ SUCCESS: Dual-Layer Vault mapped and mounted at: $MNT"
+        echo "------------------------------------------------------------------"
+        
+        # Flush transient GPG cache agents to clean system memory footprints
+        gpg-connect-agent reloadagent /bye >/dev/null 2>&1
     else
-        echo "ERROR: Decryption failed or incorrect passphrase."
+        echo "❌ Error: Symmetric GPG decryption failed or bad passphrase." >&2
+        # Clean up the unused directory if the mount process failed
+        sudo rmdir "$MNT" 2>/dev/null || true
         exit 1
     fi
 fi
